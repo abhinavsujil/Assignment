@@ -1,0 +1,44 @@
+import json
+
+def read_words(fp):
+    pos = {}
+    with open(fp, 'r') as file:
+        data = json.load(file)
+        for item in data:
+            word = item["word"]
+            bbox = item["bounding_box"]
+            pos[word] = bbox
+    return pos
+
+def scale_bbox(bbox, w, h):
+    return [
+        bbox[0] * w,
+        bbox[1] * h,
+        (bbox[0] + bbox[2]) * w,
+        (bbox[1] + bbox[3]) * h
+    ]
+
+def intersect(box1, box2):
+    return not (box1[2] < box2[0] or box1[0] > box2[2] or
+                box1[3] < box2[1] or box1[1] > box2[3])
+
+def find_words(pos, user_box):
+    found = []
+    for word, bbox in pos.items():
+        scaled = scale_bbox(bbox, doc_w, doc_h)
+        if intersect(scaled, user_box):
+            found.append(word)
+    return found
+
+doc_w = 1263
+doc_h = 1644
+
+user_box = [358, 140, 498, 171]
+
+file_path = r"C:\Users\abhin\Downloads\Biztel.ai_Python Assignment\words_position_dict.txt"
+
+words_pos = read_words(file_path)
+
+words_in_box = find_words(words_pos, user_box)
+
+print("Words enclosed within the bounding box:", words_in_box)
